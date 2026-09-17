@@ -1734,24 +1734,24 @@ export function composeImagePrompt(
   const carried = !ownPlace && continuity ? detectSetting(continuity) : null;
   const placeLead = carried ? `inside the same ${carried} as the previous picture, ` : "";
 
-  // Order: the story moment, then WHO is in it, then the guards. Identity used
-  // to sit behind the continuity sentence and was the first thing cut, so a
-  // character arrived with no hair, skin or clothing description at all.
+  // Order: the story moment, then WHO is in it, then a SHORT set of guards.
+  //
+  // Why this got shorter: every extra clause dilutes the model's attention, and
+  // a diluted prompt is exactly what produced a good-looking picture of the
+  // wrong moment — the panels that needed Fix/Reroll. The guards are now
+  // phrased positively too, because Flux has no negative channel: writing
+  // "no speech bubbles" literally puts speech bubbles into the picture.
   const parts = [
     `${STYLE_LEAD} ${placeLead}${beat.lead}`,
     restText,
     identity,
-    // Stated early enough to matter: signage and captions crept in whenever
-    // this sat at the very end of a long prompt.
-    "completely wordless picture, no writing, signs, captions or letters anywhere",
-    continuity
-      ? clip(`same continuing scene, same location and same people as the previous picture: ${continuity}`, 220)
-      : "",
+    continuity ? clip(`same place and same people as the previous picture: ${continuity}`, 160) : "",
     peopled ? STAGING_GUARD : "",
     peopled ? FRAMING_GUARD : "",
-    peopled ? "each person drawn once only, no duplicates or twins" : "empty environment, no people in frame",
+    peopled ? "each person appears once" : "empty location, scenery only",
     BACKGROUND_GUARD,
   ].filter(Boolean);
+
 
   const tail = `${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
   // The style is never allowed to be trimmed away: the scene is clipped to
