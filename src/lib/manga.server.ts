@@ -1628,7 +1628,7 @@ function identityBrief(prompt: string, bible?: string): string {
   // "Sora's room" is a place name, not a person in the picture. Counting it as
   // one put an extra character in the headcount and the renderer duly drew a
   // second person who is not in the scene.
-  const present = prompt.replace(/\b([A-Za-z]+)'s\b/g, "the");
+  const present = prompt.replace(/\b([A-Za-z]+)(\s*\([^)]*\))?'s\b/g, "the");
   const matched = parseBible(bible).filter((entry) =>
     new RegExp(`\\b${escapeRe(entry.name)}\\b`, "i").test(present),
   );
