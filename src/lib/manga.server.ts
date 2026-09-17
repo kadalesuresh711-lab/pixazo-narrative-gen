@@ -1709,23 +1709,23 @@ export function composeImagePrompt(
   const carried = !ownPlace && continuity ? detectSetting(continuity) : null;
   const placeLead = carried ? `inside the same ${carried} as the previous picture, ` : "";
 
+  // Order: the story moment, then WHO is in it, then the guards. Identity used
+  // to sit behind the continuity sentence and was the first thing cut, so a
+  // character arrived with no hair, skin or clothing description at all.
   const parts = [
     `${STYLE_LEAD} ${placeLead}${beat.lead}`,
-    // Stated early: signage, banners and captions kept creeping in when this
-    // sat at the very end of a long prompt.
-    "completely wordless picture, no writing, signs, captions or letters anywhere",
-    // Stated early: signage, banners and captions kept creeping in when this
-    // sat at the very end of a long prompt.
-    "completely wordless picture, no writing, signs, captions or letters anywhere",
-    SINGLE_FRAME_GUARD,
-    continuity ? clip(`Same continuing scene, same location and same people as the previous picture: ${continuity}`, 220) : "",
     clip(beat.rest, Math.max(120, SCENE_BUDGET - beat.lead.length)),
     identity,
+    // Stated early enough to matter: signage and captions crept in whenever
+    // this sat at the very end of a long prompt.
+    "completely wordless picture, no writing, signs, captions or letters anywhere",
+    continuity
+      ? clip(`same continuing scene, same location and same people as the previous picture: ${continuity}`, 220)
+      : "",
     peopled ? STAGING_GUARD : "",
     peopled ? FRAMING_GUARD : "",
     peopled ? "each person drawn once only, no duplicates or twins" : "empty environment, no people in frame",
     BACKGROUND_GUARD,
-    "natural clear lighting, no text anywhere",
   ].filter(Boolean);
 
   const tail = `${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
