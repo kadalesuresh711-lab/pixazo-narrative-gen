@@ -1534,7 +1534,11 @@ export function hasPeople(prompt: string, bible?: string): boolean {
  * the style words never name eyes or faces. Style is restated compactly at
  * the end, inside the T5 window.
  */
-const IMAGE_PROMPT_BUDGET = 1250;
+// Flux reads the prompt with T5 (512 tokens, roughly 2000 characters), so a
+// 1250-character cap was throwing away the end of every prompt — which is
+// exactly where each character's hair, skin and clothing sat. That truncation,
+// not the wording, is why people changed appearance from picture to picture.
+const IMAGE_PROMPT_BUDGET = 1900;
 // Flux CLIP gives the first ~300 characters the strongest influence. Keep the
 // exact action inside that window rather than allowing decorative detail to
 // displace it.
