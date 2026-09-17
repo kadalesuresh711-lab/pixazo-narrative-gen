@@ -1677,9 +1677,19 @@ const BACKGROUND_GUARD =
 /** Keep the timestamp's decisive place/subject/action sentence at the front. */
 export function openingBeat(prompt: string): { lead: string; rest: string } {
   const firstStop = prompt.search(/[.!?](?:\s|$)/);
-  const end = firstStop >= 80 ? firstStop + 1 : Math.min(prompt.length, 210);
+  // The old version took everything up to the first full stop as the lead and
+  // then clipped that to 220 characters — and since these scene descriptions
+  // are usually ONE long sentence, everything past character 220 (clothing,
+  // props, lighting, the rest of the action) was silently thrown away with no
+  // "rest" left. Cut at a comma near 220 instead and keep the remainder.
+  const hardEnd = firstStop >= 80 && firstStop + 1 <= 220 ? firstStop + 1 : 0;
+  let end = hardEnd || Math.min(prompt.length, 220);
+  if (!hardEnd && prompt.length > 220) {
+    const comma = prompt.lastIndexOf(",", 220);
+    if (comma > 80) end = comma + 1;
+  }
   return {
-    lead: clip(prompt.slice(0, end), 220),
+    lead: prompt.slice(0, end).trim(),
     rest: prompt.slice(end).trim(),
   };
 }
