@@ -1696,11 +1696,20 @@ export function composeImagePrompt(
   // actually in frame. No second appearance-lock paragraph.
   const identity = peopled ? clip(identityBrief(fixed, bible), LOCK_BUDGET) : "";
 
-  // Order matters: location and action own Flux CLIP's short opening window,
-  // then continuity, environment, staging — identity comes after the scene is
-  // established, so the picture is a story moment rather than a character study.
+  // The place owns the very first words. A close-up line ("Close-up of Yuki
+  // shouting") used to open the prompt with a face and nothing else, and the
+  // renderer answered with a portrait floating in an invented backdrop. When
+  // the running location is known and the line does not name its own, it is
+  // stated before the action so the picture stays in the story's own place.
+  const ownPlace = detectSetting(beat.lead);
+  const carried = !ownPlace && continuity ? detectSetting(continuity) : null;
+  const placeLead = carried ? `inside the same ${carried} as the previous picture, ` : "";
+
   const parts = [
-    `${STYLE_LEAD} ${beat.lead}`,
+    `${STYLE_LEAD} ${placeLead}${beat.lead}`,
+    // Stated early: signage, banners and captions kept creeping in when this
+    // sat at the very end of a long prompt.
+    "completely wordless picture, no writing, signs, captions or letters anywhere",
     // Stated early: signage, banners and captions kept creeping in when this
     // sat at the very end of a long prompt.
     "completely wordless picture, no writing, signs, captions or letters anywhere",
