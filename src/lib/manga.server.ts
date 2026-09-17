@@ -1700,9 +1700,14 @@ export function composeImagePrompt(
   );
   const peopled = hasPeople(fixed, bible);
   const beat = openingBeat(fixed);
+  const restText = clip(beat.rest, Math.max(120, SCENE_BUDGET - beat.lead.length));
+  // Identity is judged against the text that ACTUALLY ships, not the untrimmed
+  // one: a character whose clothing was trimmed off the scene used to be listed
+  // by bare name, so the renderer dressed her however it liked.
+  const sceneText = `${beat.lead}. ${restText}`;
   // Exactly ONE identity description per character, and only when someone is
   // actually in frame. No second appearance-lock paragraph.
-  const identity = peopled ? clip(identityBrief(fixed, bible), LOCK_BUDGET) : "";
+  const identity = peopled ? clip(identityBrief(sceneText, bible), LOCK_BUDGET) : "";
 
   // The place owns the very first words. A close-up line ("Close-up of Yuki
   // shouting") used to open the prompt with a face and nothing else, and the
@@ -1718,7 +1723,7 @@ export function composeImagePrompt(
   // character arrived with no hair, skin or clothing description at all.
   const parts = [
     `${STYLE_LEAD} ${placeLead}${beat.lead}`,
-    clip(beat.rest, Math.max(120, SCENE_BUDGET - beat.lead.length)),
+    restText,
     identity,
     // Stated early enough to matter: signage and captions crept in whenever
     // this sat at the very end of a long prompt.
