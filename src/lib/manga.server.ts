@@ -1625,8 +1625,12 @@ const SINGLE_FRAME_GUARD =
  */
 function identityBrief(prompt: string, bible?: string): string {
   if (!bible) return "";
+  // "Sora's room" is a place name, not a person in the picture. Counting it as
+  // one put an extra character in the headcount and the renderer duly drew a
+  // second person who is not in the scene.
+  const present = prompt.replace(/\b([A-Za-z]+)'s\b/g, "the");
   const matched = parseBible(bible).filter((entry) =>
-    new RegExp(`\\b${escapeRe(entry.name)}\\b`, "i").test(prompt),
+    new RegExp(`\\b${escapeRe(entry.name)}\\b`, "i").test(present),
   );
   if (matched.length === 0) return "";
   const shown = matched.slice(0, 3);
