@@ -1754,6 +1754,7 @@ export function composeImagePrompt(
   const scene = clip(
     parts
       .join(". ")
+      .replace(/,\s*\./g, ".")
       .replace(/\.\s*\./g, ".")
       .replace(/\s{2,}/g, " "),
     Math.max(200, IMAGE_PROMPT_BUDGET - tail.length - 2),
