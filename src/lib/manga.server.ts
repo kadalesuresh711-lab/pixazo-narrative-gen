@@ -1675,7 +1675,7 @@ const BACKGROUND_GUARD =
   "a complete environment fills the background with depth, props and scenery around them";
 
 /** Keep the timestamp's decisive place/subject/action sentence at the front. */
-function openingBeat(prompt: string): { lead: string; rest: string } {
+export function openingBeat(prompt: string): { lead: string; rest: string } {
   const firstStop = prompt.search(/[.!?](?:\s|$)/);
   const end = firstStop >= 80 ? firstStop + 1 : Math.min(prompt.length, 210);
   return {
