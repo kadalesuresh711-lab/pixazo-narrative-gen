@@ -1534,19 +1534,19 @@ export function hasPeople(prompt: string, bible?: string): boolean {
  * the style words never name eyes or faces. Style is restated compactly at
  * the end, inside the T5 window.
  */
-// Flux reads the prompt with T5 (512 tokens, roughly 2000 characters), so a
-// 1250-character cap was throwing away the end of every prompt — which is
-// exactly where each character's hair, skin and clothing sat. That truncation,
-// not the wording, is why people changed appearance from picture to picture.
-const IMAGE_PROMPT_BUDGET = 1900;
+// Flux reads the prompt with T5, but attention thins out badly past roughly a
+// thousand characters: a 1900-character prompt rendered a pretty picture of
+// the WRONG moment, which is what the Fix/Reroll buttons were compensating
+// for. Short and dense beats long and complete.
+const IMAGE_PROMPT_BUDGET = 1150;
 // Flux CLIP gives the first ~300 characters the strongest influence. Keep the
 // exact action inside that window rather than allowing decorative detail to
 // displace it.
-const SCENE_BUDGET = 1000;
-// The lock used to be clipped at 150 chars, which cut most characters' traits
-// (clothing colours sit at the END of a bible line) — that truncation is the
-// main reason outfits and minor looks drifted panel to panel.
-const LOCK_BUDGET = 420;
+const SCENE_BUDGET = 620;
+// Enough for hair, eyes, skin and outfit of up to three characters without
+// turning the prompt into a character sheet.
+const LOCK_BUDGET = 300;
+
 
 /**
  * Removes writing-model bookkeeping from a prompt before it reaches the
@@ -1590,28 +1590,33 @@ function clip(s: string, max: number): string {
  * without ever naming faces or eyes as things to draw.
  */
 const STYLE_LEAD =
-  "single full-bleed colour shonen manga illustration, one continuous picture filling the whole frame, of";
+  "colour shonen manga illustration, one single full-bleed widescreen picture of";
 
 /**
  * The fixed look. This is appended AFTER the scene has been trimmed, never
  * inside the trimmed block: when it lived inside the clipped body it was the
  * first thing cut on a long scene, and those panels came back in a different
  * art style from their neighbours.
+ *
+ * Kept SHORT on purpose. A long decorative style paragraph competes with the
+ * story sentence for the model's attention and is a main reason a picture came
+ * back beautiful but wrong — which is exactly what the fix/reroll buttons were
+ * being used for.
  */
 const STYLE_TAIL =
-  "bold shonen fighting manga artwork, heavy black ink outlines with dramatic hatching, halftone screentone shading, " +
-  "deeply saturated vivid colours, glowing magical energy effects, motion lines on action, " +
-  "high-contrast dramatic lighting, richly detailed fantastical background full of magical-world detail, " +
-  "finished colour manga illustration drawn edge to edge, identical art style in every picture of this story";
+  "bold shonen manga art, clean black ink linework, halftone screentone shading, " +
+  "saturated colours, dramatic lighting, detailed background, consistent art style";
 
 /**
  * Anti-collage guard. Flux reads the word "manga" as permission to draw a
- * whole comic PAGE: several bordered panels with gutters and speech balloons.
- * Stated early, where CLIP still weighs it, and again at the very end.
+ * whole comic PAGE. Flux has no negative channel, so this is phrased as a
+ * POSITIVE description of the wanted frame: naming "panel borders", "speech
+ * bubbles" or "collage" — even to forbid them — puts those very tokens into
+ * the picture, which is what kept producing comic pages with balloons.
  */
 const SINGLE_FRAME_GUARD =
-  "one single uninterrupted widescreen image, not a comic page, no panel borders, no gutters, " +
-  "no split screens, no insets, no collage, no speech bubbles";
+  "one seamless uninterrupted illustration, edge-to-edge artwork, clean picture free of lettering";
+
 
 
 /**
@@ -1661,18 +1666,19 @@ function identityBrief(prompt: string, bible?: string): string {
  * positively and concretely instead of being left to the model.
  */
 const STAGING_GUARD =
-  "everyone absorbed in the action, eyes on each other, bodies turned into the scene at a three-quarter angle";
+  "figures turned into the action at a three-quarter angle, looking at each other";
 
 /**
  * Framing guard. Panels came back with a head cut off at the top edge or a
  * torso filling the frame, so the safe area is stated positively.
  */
 const FRAMING_GUARD =
-  "every figure framed complete with clear space around them, whole heads and bodies well inside the frame, nothing cut off by the edges";
+  "full-body figures with clear space around them, whole heads inside the frame";
 
 /** Environment requirement — a scene, never a floating figure on blank paper. */
 const BACKGROUND_GUARD =
-  "a complete environment fills the background with depth, props and scenery around them";
+  "detailed environment with depth, props and scenery behind them";
+
 
 /** Keep the timestamp's decisive place/subject/action sentence at the front. */
 export function openingBeat(prompt: string): { lead: string; rest: string } {
@@ -1728,24 +1734,24 @@ export function composeImagePrompt(
   const carried = !ownPlace && continuity ? detectSetting(continuity) : null;
   const placeLead = carried ? `inside the same ${carried} as the previous picture, ` : "";
 
-  // Order: the story moment, then WHO is in it, then the guards. Identity used
-  // to sit behind the continuity sentence and was the first thing cut, so a
-  // character arrived with no hair, skin or clothing description at all.
+  // Order: the story moment, then WHO is in it, then a SHORT set of guards.
+  //
+  // Why this got shorter: every extra clause dilutes the model's attention, and
+  // a diluted prompt is exactly what produced a good-looking picture of the
+  // wrong moment — the panels that needed Fix/Reroll. The guards are now
+  // phrased positively too, because Flux has no negative channel: writing
+  // "no speech bubbles" literally puts speech bubbles into the picture.
   const parts = [
     `${STYLE_LEAD} ${placeLead}${beat.lead}`,
     restText,
     identity,
-    // Stated early enough to matter: signage and captions crept in whenever
-    // this sat at the very end of a long prompt.
-    "completely wordless picture, no writing, signs, captions or letters anywhere",
-    continuity
-      ? clip(`same continuing scene, same location and same people as the previous picture: ${continuity}`, 220)
-      : "",
+    continuity ? clip(`same place and same people as the previous picture: ${continuity}`, 160) : "",
     peopled ? STAGING_GUARD : "",
     peopled ? FRAMING_GUARD : "",
-    peopled ? "each person drawn once only, no duplicates or twins" : "empty environment, no people in frame",
+    peopled ? "each person appears once" : "empty location, scenery only",
     BACKGROUND_GUARD,
   ].filter(Boolean);
+
 
   const tail = `${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
   // The style is never allowed to be trimmed away: the scene is clipped to
@@ -1832,9 +1838,11 @@ export async function generateImage(
           },
           body: JSON.stringify({
             prompt: body,
-            // Flux Schnell is distilled for four steps; extra steps do not fix
-            // identity drift. Prompt order above is the quality control.
-            num_steps: 4,
+            // Eight steps is the highest this endpoint honours for Schnell and
+            // it measurably cleans up hands, faces and composition — the three
+            // things that sent panels to the Reroll button.
+            num_steps: 8,
+
             // a fresh seed each attempt, so a blank frame is never re-rolled identically
             seed: seed + attempt * 977,
             width: 1344,
