@@ -1666,18 +1666,19 @@ function identityBrief(prompt: string, bible?: string): string {
  * positively and concretely instead of being left to the model.
  */
 const STAGING_GUARD =
-  "everyone absorbed in the action, eyes on each other, bodies turned into the scene at a three-quarter angle";
+  "figures turned into the action at a three-quarter angle, looking at each other";
 
 /**
  * Framing guard. Panels came back with a head cut off at the top edge or a
  * torso filling the frame, so the safe area is stated positively.
  */
 const FRAMING_GUARD =
-  "every figure framed complete with clear space around them, whole heads and bodies well inside the frame, nothing cut off by the edges";
+  "full-body figures with clear space around them, whole heads inside the frame";
 
 /** Environment requirement — a scene, never a floating figure on blank paper. */
 const BACKGROUND_GUARD =
-  "a complete environment fills the background with depth, props and scenery around them";
+  "detailed environment with depth, props and scenery behind them";
+
 
 /** Keep the timestamp's decisive place/subject/action sentence at the front. */
 export function openingBeat(prompt: string): { lead: string; rest: string } {
