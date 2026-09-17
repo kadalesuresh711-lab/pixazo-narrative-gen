@@ -1838,9 +1838,11 @@ export async function generateImage(
           },
           body: JSON.stringify({
             prompt: body,
-            // Flux Schnell is distilled for four steps; extra steps do not fix
-            // identity drift. Prompt order above is the quality control.
-            num_steps: 4,
+            // Eight steps is the highest this endpoint honours for Schnell and
+            // it measurably cleans up hands, faces and composition — the three
+            // things that sent panels to the Reroll button.
+            num_steps: 8,
+
             // a fresh seed each attempt, so a blank frame is never re-rolled identically
             seed: seed + attempt * 977,
             width: 1344,
