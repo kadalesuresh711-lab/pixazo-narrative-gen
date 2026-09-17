@@ -1590,28 +1590,33 @@ function clip(s: string, max: number): string {
  * without ever naming faces or eyes as things to draw.
  */
 const STYLE_LEAD =
-  "single full-bleed colour shonen manga illustration, one continuous picture filling the whole frame, of";
+  "colour shonen manga illustration, one single full-bleed widescreen picture of";
 
 /**
  * The fixed look. This is appended AFTER the scene has been trimmed, never
  * inside the trimmed block: when it lived inside the clipped body it was the
  * first thing cut on a long scene, and those panels came back in a different
  * art style from their neighbours.
+ *
+ * Kept SHORT on purpose. A long decorative style paragraph competes with the
+ * story sentence for the model's attention and is a main reason a picture came
+ * back beautiful but wrong — which is exactly what the fix/reroll buttons were
+ * being used for.
  */
 const STYLE_TAIL =
-  "bold shonen fighting manga artwork, heavy black ink outlines with dramatic hatching, halftone screentone shading, " +
-  "deeply saturated vivid colours, glowing magical energy effects, motion lines on action, " +
-  "high-contrast dramatic lighting, richly detailed fantastical background full of magical-world detail, " +
-  "finished colour manga illustration drawn edge to edge, identical art style in every picture of this story";
+  "bold shonen manga art, clean black ink linework, halftone screentone shading, " +
+  "saturated colours, dramatic lighting, detailed background, consistent art style";
 
 /**
  * Anti-collage guard. Flux reads the word "manga" as permission to draw a
- * whole comic PAGE: several bordered panels with gutters and speech balloons.
- * Stated early, where CLIP still weighs it, and again at the very end.
+ * whole comic PAGE. Flux has no negative channel, so this is phrased as a
+ * POSITIVE description of the wanted frame: naming "panel borders", "speech
+ * bubbles" or "collage" — even to forbid them — puts those very tokens into
+ * the picture, which is what kept producing comic pages with balloons.
  */
 const SINGLE_FRAME_GUARD =
-  "one single uninterrupted widescreen image, not a comic page, no panel borders, no gutters, " +
-  "no split screens, no insets, no collage, no speech bubbles";
+  "one seamless uninterrupted illustration, edge-to-edge artwork, clean picture free of lettering";
+
 
 
 /**
