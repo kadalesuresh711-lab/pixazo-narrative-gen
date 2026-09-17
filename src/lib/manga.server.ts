@@ -1585,13 +1585,30 @@ function clip(s: string, max: number): string {
  * without spending CLIP's short window on style nouns — and, critically,
  * without ever naming faces or eyes as things to draw.
  */
-const STYLE_LEAD = "vivid colour shonen action manga panel in a magical fantasy world, of";
+const STYLE_LEAD =
+  "single full-bleed colour shonen manga illustration, one continuous picture filling the whole frame, of";
 
+/**
+ * The fixed look. This is appended AFTER the scene has been trimmed, never
+ * inside the trimmed block: when it lived inside the clipped body it was the
+ * first thing cut on a long scene, and those panels came back in a different
+ * art style from their neighbours.
+ */
 const STYLE_TAIL =
   "bold shonen fighting manga artwork, heavy black ink outlines with dramatic hatching, halftone screentone shading, " +
   "deeply saturated vivid colours, glowing magical energy effects, motion lines on action, " +
   "high-contrast dramatic lighting, richly detailed fantastical background full of magical-world detail, " +
-  "finished colour manga illustration drawn edge to edge";
+  "finished colour manga illustration drawn edge to edge, identical art style in every picture of this story";
+
+/**
+ * Anti-collage guard. Flux reads the word "manga" as permission to draw a
+ * whole comic PAGE: several bordered panels with gutters and speech balloons.
+ * Stated early, where CLIP still weighs it, and again at the very end.
+ */
+const SINGLE_FRAME_GUARD =
+  "one single uninterrupted widescreen image, not a comic page, no panel borders, no gutters, " +
+  "no split screens, no insets, no collage, no speech bubbles";
+
 
 /**
  * ONE short identity line per character in frame.
