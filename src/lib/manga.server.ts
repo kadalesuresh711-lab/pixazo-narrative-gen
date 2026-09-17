@@ -1542,11 +1542,11 @@ const IMAGE_PROMPT_BUDGET = 1900;
 // Flux CLIP gives the first ~300 characters the strongest influence. Keep the
 // exact action inside that window rather than allowing decorative detail to
 // displace it.
-const SCENE_BUDGET = 640;
+const SCENE_BUDGET = 1000;
 // The lock used to be clipped at 150 chars, which cut most characters' traits
 // (clothing colours sit at the END of a bible line) — that truncation is the
 // main reason outfits and minor looks drifted panel to panel.
-const LOCK_BUDGET = 260;
+const LOCK_BUDGET = 420;
 
 /**
  * Removes writing-model bookkeeping from a prompt before it reaches the
