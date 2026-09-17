@@ -1534,19 +1534,19 @@ export function hasPeople(prompt: string, bible?: string): boolean {
  * the style words never name eyes or faces. Style is restated compactly at
  * the end, inside the T5 window.
  */
-// Flux reads the prompt with T5 (512 tokens, roughly 2000 characters), so a
-// 1250-character cap was throwing away the end of every prompt — which is
-// exactly where each character's hair, skin and clothing sat. That truncation,
-// not the wording, is why people changed appearance from picture to picture.
-const IMAGE_PROMPT_BUDGET = 1900;
+// Flux reads the prompt with T5, but attention thins out badly past roughly a
+// thousand characters: a 1900-character prompt rendered a pretty picture of
+// the WRONG moment, which is what the Fix/Reroll buttons were compensating
+// for. Short and dense beats long and complete.
+const IMAGE_PROMPT_BUDGET = 1150;
 // Flux CLIP gives the first ~300 characters the strongest influence. Keep the
 // exact action inside that window rather than allowing decorative detail to
 // displace it.
-const SCENE_BUDGET = 1000;
-// The lock used to be clipped at 150 chars, which cut most characters' traits
-// (clothing colours sit at the END of a bible line) — that truncation is the
-// main reason outfits and minor looks drifted panel to panel.
-const LOCK_BUDGET = 420;
+const SCENE_BUDGET = 620;
+// Enough for hair, eyes, skin and outfit of up to three characters without
+// turning the prompt into a character sheet.
+const LOCK_BUDGET = 300;
+
 
 /**
  * Removes writing-model bookkeeping from a prompt before it reaches the
