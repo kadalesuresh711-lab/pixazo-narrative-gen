@@ -1704,7 +1704,8 @@ export function composeImagePrompt(
     // Stated early: signage, banners and captions kept creeping in when this
     // sat at the very end of a long prompt.
     "completely wordless picture, no writing, signs, captions or letters anywhere",
-    continuity ? clip(`Same continuing scene: ${continuity}`, 200) : "",
+    SINGLE_FRAME_GUARD,
+    continuity ? clip(`Same continuing scene, same location and same people as the previous picture: ${continuity}`, 220) : "",
     clip(beat.rest, Math.max(120, SCENE_BUDGET - beat.lead.length)),
     identity,
     peopled ? STAGING_GUARD : "",
@@ -1712,17 +1713,21 @@ export function composeImagePrompt(
     peopled ? "each person drawn once only, no duplicates or twins" : "empty environment, no people in frame",
     BACKGROUND_GUARD,
     "natural clear lighting, no text anywhere",
-    STYLE_TAIL,
-    "one single widescreen story frame",
   ].filter(Boolean);
 
-  return clip(
+  const tail = `${STYLE_TAIL}. ${SINGLE_FRAME_GUARD}`;
+  // The style is never allowed to be trimmed away: the scene is clipped to
+  // whatever room is left AFTER the fixed look is reserved, then the look is
+  // appended. Every picture in a story therefore ends on the same words.
+  const scene = clip(
     parts
       .join(". ")
       .replace(/\.\s*\./g, ".")
       .replace(/\s{2,}/g, " "),
-    IMAGE_PROMPT_BUDGET,
+    Math.max(200, IMAGE_PROMPT_BUDGET - tail.length - 2),
   );
+
+  return `${scene}. ${tail}`;
 }
 
 /* ------------------------------------------------------------------ */
